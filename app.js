@@ -9,16 +9,31 @@ const bodyParser = require("body-parser");
 const app = express();
 const User = require("./models/User");
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
-mongoose.connect(
-  "mongodb+srv://djdeadmin:kasBsCefym5HAdwJ@djdcodedb.hmdyr.mongodb.net/djdcodeDB?retryWrites=true&w=majority",
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  },
-  () => {
-    console.log("Mongoose Is Connected");
+const connectDatabase = async () => {
+  try {
+    await mongoose.connect(
+      "mongodb+srv://djdeadmin:kasBsCefym5HAdwJ@djdcodedb.hmdyr.mongodb.net/djdcodeDB?retryWrites=true&w=majority"
+    );
+
+    console.log("connected to database");
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
   }
-);
+};
+
+connectDatabase();
+
+// mongoose.connect(
+//   "mongodb+srv://djdeadmin:kasBsCefym5HAdwJ@djdcodedb.hmdyr.mongodb.net/djdcodeDB?retryWrites=true&w=majority",
+//   {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   },
+//   () => {
+//     console.log("Mongoose Is Connected");
+//   }
+// );
 
 // Middleware
 app.use(bodyParser.json());
