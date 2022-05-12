@@ -6,14 +6,13 @@ const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const bodyParser = require("body-parser");
+const { MONGO_URI, PORT } = require("./config/config.env");
 const app = express();
 const User = require("./models/User");
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
 const connectDatabase = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://djdeadmin:kasBsCefym5HAdwJ@djdcodedb.hmdyr.mongodb.net/djdcodeDB?retryWrites=true&w=majority"
-    );
+    await mongoose.connect(MONGO_URI);
 
     console.log("connected to database");
   } catch (error) {
@@ -23,17 +22,6 @@ const connectDatabase = async () => {
 };
 
 connectDatabase();
-
-// mongoose.connect(
-//   "mongodb+srv://djdeadmin:kasBsCefym5HAdwJ@djdcodedb.hmdyr.mongodb.net/djdcodeDB?retryWrites=true&w=majority",
-//   {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//   },
-//   () => {
-//     console.log("Mongoose Is Connected");
-//   }
-// );
 
 // Middleware
 app.use(bodyParser.json());
