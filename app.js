@@ -27,10 +27,10 @@ connectDatabase();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
-  cors({
-    // origin: "http://0.0.0.0:3000", // <-- location of the react app were connecting to
-    // credentials: true,
-  })
+  cors()
+  // origin: "http://0.0.0.0:3000", // <-- location of the react app were connecting to
+  // credentials: true,
+  //})
 );
 // app.options("*", cors());
 app.use(
