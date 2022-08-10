@@ -28,7 +28,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "http://localhost:3000", // <-- location of the react app were connecting to
+    origin: "http://0.0.0.0:3000", // <-- location of the react app were connecting to
     credentials: true,
   })
 );
@@ -85,6 +85,6 @@ app.get("/user", (req, res) => {
 });
 //----------------------------------------- END OF ROUTES---------------------------------------------------
 //Start Server
-app.listen(4000, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log("Server Has Started");
 });
