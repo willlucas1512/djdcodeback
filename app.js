@@ -83,6 +83,15 @@ app.post("/register", (req, res) => {
 app.get("/user", (req, res) => {
   res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
 });
+app.get("/", (req, res, next) => {
+  res.status(200).json({
+    status: "success",
+    data: {
+      name: "name of your app",
+      version: "0.1.0",
+    },
+  });
+});
 //----------------------------------------- END OF ROUTES---------------------------------------------------
 //Start Server
 app.listen(process.env.PORT || 5000, () => {
