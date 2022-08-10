@@ -50,13 +50,14 @@ app.use(passport.session());
 app.post("/login", (req, res, next) => {
   User.findOne({ email: req.body.email }, (err, user) => {
     if (err) throw err;
-    if (!user) return done(null, false);
+    if (!user) res.send("Email incorreto");
     bcrypt.compare(req.body.password, user.password, (err, result) => {
       if (err) throw err;
       if (result) {
+        console.log(user);
         res.send(user);
       } else {
-        res.send("Email não existe no banco de dados");
+        res.status(401).send("Senha incorreta");
       }
     });
   });
@@ -64,7 +65,7 @@ app.post("/login", (req, res, next) => {
 app.post("/register", (req, res) => {
   User.findOne({ email: req.body.email }, async (err, doc) => {
     if (err) throw err;
-    if (doc) res.send("User Already Exists");
+    if (doc) res.send("Já existe uma conta com esse email");
     if (!doc) {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
