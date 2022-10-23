@@ -21,7 +21,7 @@ const User = require("./models/User");
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
 const connectDatabase = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(MONGO_URI);
 
     console.log("connected to database");
   } catch (error) {
@@ -35,12 +35,12 @@ connectDatabase();
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(
-//   cors()
-// origin: "http://0.0.0.0:3000", // <-- location of the react app were connecting to
-// credentials: true,
-//})
-// );
+app.use(
+  cors({
+    origin: "http://localhost:3000", // <-- location of the react app were connecting to
+    credentials: true,
+  })
+);
 // app.options("*", cors());
 app.use(
   session({
@@ -200,6 +200,6 @@ app.get("/", (req, res, next) => {
 });
 //----------------------------------------- END OF ROUTES---------------------------------------------------
 //Start Server
-app.listen(process.env.PORT || 5000, () => {
+app.listen(PORT || 4000, () => {
   console.log("Server Has Started");
 });
