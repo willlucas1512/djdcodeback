@@ -22,8 +22,7 @@ const User = require("./models/User");
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
 const connectDatabase = async () => {
   try {
-    console.log(MONGO_URI);
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI);
 
     console.log("connected to database");
   } catch (error) {
@@ -39,7 +38,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: FRONT_PROD_URI, // <-- location of the react app were connecting to
+    origin: process.env.FRONT_PROD_URI, // <-- location of the react app were connecting to
     credentials: true,
   })
 );
@@ -62,8 +61,8 @@ const transporter = nodemailer.createTransport(
   smtpTransport({
     service: "gmail",
     auth: {
-      user: EMAIL_USERNAME,
-      pass: EMAIL_PASSWORD,
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD,
     },
   })
 );
@@ -125,7 +124,7 @@ app.post("/recover", (req, res) => {
     if (user) {
       const token = crypto.randomBytes(20).toString("hex");
       const mailOptions = {
-        from: EMAIL_USERNAME,
+        from: process.env.EMAIL_USERNAME,
         to: req.body.email,
         subject: "Recuperação de senha",
         text:
@@ -202,6 +201,6 @@ app.get("/", (req, res, next) => {
 });
 //----------------------------------------- END OF ROUTES---------------------------------------------------
 //Start Server
-app.listen(PORT || 4000, () => {
+app.listen(process.env.PORT || 4000, () => {
   console.log("Server Has Started");
 });
