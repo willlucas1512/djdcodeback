@@ -37,10 +37,11 @@ connectDatabase();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
-  cors({
-    origin: process.env.FRONT_PROD_URI, // <-- location of the react app were connecting to
-    credentials: true,
-  })
+  cors()
+  // {
+  //  origin: process.env.FRONT_PROD_URI, // <-- location of the react app were connecting to
+  // credentials: true,
+  // }
 );
 // app.options("*", cors());
 app.use(
