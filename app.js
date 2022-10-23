@@ -22,6 +22,7 @@ const User = require("./models/User");
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
 const connectDatabase = async () => {
   try {
+    console.log(MONGO_URI);
     await mongoose.connect(MONGO_URI);
 
     console.log("connected to database");
