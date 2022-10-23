@@ -14,6 +14,7 @@ const {
   PORT,
   EMAIL_USERNAME,
   EMAIL_PASSWORD,
+  FRONT_PROD_URI,
 } = require("./config/config.env");
 const app = express();
 const User = require("./models/User");
@@ -37,7 +38,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "http://localhost:3000", // <-- location of the react app were connecting to
+    origin: FRONT_PROD_URI, // <-- location of the react app were connecting to
     credentials: true,
   })
 );
