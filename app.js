@@ -4,11 +4,20 @@ const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
-const session = require("cookie-session");
+const crypto = require("crypto");
+const session = require("express-session");
 const bodyParser = require("body-parser");
+const nodemailer = require("nodemailer");
+const smtpTransport = require("nodemailer-smtp-transport");
+const {
+  MONGO_URI,
+  PORT,
+  EMAIL_USERNAME,
+  EMAIL_PASSWORD,
+} = require("./config/config.env");
 const app = express();
 const User = require("./models/User");
-require("dotenv").config();
+
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
 const connectDatabase = async () => {
   try {
@@ -46,19 +55,115 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //----------------------------------------- END OF MIDDLEWARE---------------------------------------------------
+// Email
+const transporter = nodemailer.createTransport(
+  smtpTransport({
+    service: "gmail",
+    auth: {
+      user: EMAIL_USERNAME,
+      pass: EMAIL_PASSWORD,
+    },
+  })
+);
 
 // Routes
+
+app.post("/reset-pass", (req, res) => {
+  if (req.body.password === req.body.confirmPassword) {
+    User.findOne(
+      {
+        resetPasswordToken: req.body.token,
+        resetPasswordExpires: { $gt: Date.now() },
+      },
+      (err, user) => {
+        if (err) throw err;
+        if (!user)
+          return res.json("Link de reset de senha é inválido ou já expirou");
+        if (user) {
+          updateUserResetPassword({
+            body: {
+              email: user.email,
+              password: req.body.password,
+            },
+          });
+          res.status(200).json({ message: "Senha atualizada!" });
+        }
+      }
+    );
+  } else {
+    return res.status(400).json({ message: "Senhas não são iguais" });
+  }
+});
+
+function updateUserResetPassword(req, res) {
+  User.findOne({ email: req.body.email }, async (err, user) => {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    user.save();
+  });
+}
+
+function updateUserToken(req, res) {
+  User.findOne({ email: req.body.email }, (err, user) => {
+    user.resetPasswordToken = req.body.token;
+    user.resetPasswordExpires = req.body.expires;
+    user.save();
+  });
+}
+
+app.post("/recover", (req, res) => {
+  User.findOne({ email: req.body.email }, (err, user) => {
+    if (err) throw err;
+    if (!user)
+      return res
+        .status(400)
+        .json({ message: "Não existe um usuário cadastrado para este email." });
+    if (user) {
+      const token = crypto.randomBytes(20).toString("hex");
+      const mailOptions = {
+        from: EMAIL_USERNAME,
+        to: req.body.email,
+        subject: "Recuperação de senha",
+        text:
+          "Olá,  \n" +
+          "Acesse o link abaixo para alterar a senha de acesso no DJDcodE: \n" +
+          `http://localhost:3000/reset-pass/${token} \n` +
+          "Caso não tenha solicitado a alteração de senha, favor ignorar esta mensagem.",
+      };
+      transporter.sendMail(mailOptions, async (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          updateUserToken({
+            body: {
+              email: user.email,
+              token: token,
+              expires: Date.now() + 360000,
+            },
+          });
+          res.status(200).json({ message: "Email enviado com sucesso" });
+        }
+      });
+    }
+  });
+});
+
 app.post("/login", (req, res, next) => {
   User.findOne({ email: req.body.email }, (err, user) => {
     if (err) throw err;
-    if (!user) res.send("Email incorreto");
+    if (!user)
+      return res
+        .status(400)
+        .json({ message: "Não existe um usuário cadastrado para este email." });
     bcrypt.compare(req.body.password, user.password, (err, result) => {
       if (err) throw err;
       if (result) {
         console.log(user);
         res.send(user);
       } else {
-        res.status(401).send("Senha incorreta");
+        return res.status(401).json({ message: "Credenciais inválidas" });
       }
     });
   });
@@ -66,7 +171,7 @@ app.post("/login", (req, res, next) => {
 app.post("/register", (req, res) => {
   User.findOne({ email: req.body.email }, async (err, doc) => {
     if (err) throw err;
-    if (doc) res.send("Já existe uma conta com esse email");
+    if (doc) res.status(400).json({ message: "Usuário já existe." });
     if (!doc) {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -77,7 +182,7 @@ app.post("/register", (req, res) => {
         password: hashedPassword,
       });
       await newUser.save();
-      res.send("User Created");
+      res.status(200).json({ message: "Usuário criado" });
     }
   });
 });
