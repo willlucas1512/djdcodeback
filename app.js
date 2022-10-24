@@ -80,7 +80,9 @@ app.post("/reset-pass", (req, res) => {
       (err, user) => {
         if (err) throw err;
         if (!user)
-          return res.json("Link de reset de senha é inválido ou já expirou");
+          return res.status(400).json({
+            message: "Link de reset de senha é inválido ou já expirou.",
+          });
         if (user) {
           updateUserResetPassword({
             body: {
@@ -93,7 +95,7 @@ app.post("/reset-pass", (req, res) => {
       }
     );
   } else {
-    return res.status(400).json({ message: "Senhas não são iguais" });
+    return res.status(400).json({ message: "Senhas não são iguais." });
   }
 });
 
@@ -145,7 +147,7 @@ app.post("/recover", (req, res) => {
               expires: Date.now() + 360000,
             },
           });
-          res.status(200).json({ message: "Email enviado com sucesso" });
+          res.status(200).json({ message: "Email enviado com sucesso!" });
         }
       });
     }
@@ -162,10 +164,9 @@ app.post("/login", (req, res, next) => {
     bcrypt.compare(req.body.password, user.password, (err, result) => {
       if (err) throw err;
       if (result) {
-        console.log(user);
         res.send(user);
       } else {
-        return res.status(401).json({ message: "Credenciais inválidas" });
+        return res.status(401).json({ message: "Senha ou email incorreto." });
       }
     });
   });
@@ -173,7 +174,8 @@ app.post("/login", (req, res, next) => {
 app.post("/register", (req, res) => {
   User.findOne({ email: req.body.email }, async (err, doc) => {
     if (err) throw err;
-    if (doc) res.status(400).json({ message: "Usuário já existe." });
+    if (doc)
+      res.status(400).json({ message: "Usuário já existe. Faça o login." });
     if (!doc) {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -184,7 +186,7 @@ app.post("/register", (req, res) => {
         password: hashedPassword,
       });
       await newUser.save();
-      res.status(200).json({ message: "Usuário criado" });
+      res.status(200).json({ message: "Conta criada com sucesso!" });
     }
   });
 });
