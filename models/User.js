@@ -29,6 +29,10 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  courses: {
+    type: Array,
+    required: false,
+  },
 });
 
 const User = mongoose.model("User", UserSchema);

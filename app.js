@@ -18,11 +18,11 @@ const {
 } = require("./config/config.env");
 const app = express();
 const User = require("./models/User");
-
+const Course = require("./models/Course");
 //----------------------------------------- END OF IMPORTS---------------------------------------------------
 const connectDatabase = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(MONGO_URI);
 
     console.log("connected to database");
   } catch (error) {
@@ -190,6 +190,45 @@ app.post("/register", (req, res) => {
     }
   });
 });
+app.post("/course", async (req, res) => {
+  const loggedInUserId = req.body.user._id; // Assuming user information is available in req.user
+  const courseData = req.body.course;
+
+  try {
+    // Check if the course with the given name already exists for the user
+    const existingCourse = await Course.findOne({
+      nome: courseData.nome,
+      user: loggedInUserId,
+    });
+    if (existingCourse) {
+      return res.status(400).json({
+        message: "Course with the same name already exists for this user.",
+      });
+    }
+
+    // Create a new course using the Course schema
+    const newCourse = new Course({
+      nome: courseData.nome,
+      introducao: courseData.introducao,
+      user: loggedInUserId,
+      niveis: courseData.niveis,
+      qtd_niveis: courseData.qtd_niveis,
+      colunas: courseData.colunas,
+      linhas: courseData.linhas,
+    });
+
+    // Save the new course
+    await newCourse.save();
+
+    res.status(200).json({ message: "Course saved successfully!" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while saving the course." });
+  }
+});
+
 app.get("/user", (req, res) => {
   res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
 });
@@ -204,6 +243,6 @@ app.get("/", (req, res, next) => {
 });
 //----------------------------------------- END OF ROUTES---------------------------------------------------
 //Start Server
-app.listen(process.env.PORT || 4000, () => {
+app.listen(PORT || 4000, () => {
   console.log("Server Has Started");
 });
