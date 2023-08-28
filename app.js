@@ -190,7 +190,7 @@ app.post("/register", (req, res) => {
     }
   });
 });
-app.post("/course", async (req, res) => {
+app.post("/courses", async (req, res) => {
   const loggedInUserId = req.body.user._id; // Assuming user information is available in req.user
   const courseData = req.body.course;
 
@@ -210,7 +210,11 @@ app.post("/course", async (req, res) => {
     const newCourse = new Course({
       nome: courseData.nome,
       introducao: courseData.introducao,
-      user: loggedInUserId,
+      user: {
+        _id: loggedInUserId,
+        name_first: req.body.user.name_first,
+        name_last: req.body.user.name_last,
+      },
       niveis: courseData.niveis,
       qtd_niveis: courseData.qtd_niveis,
       colunas: courseData.colunas,
@@ -228,6 +232,42 @@ app.post("/course", async (req, res) => {
       .json({ message: "An error occurred while saving the course." });
   }
 });
+app.get("/courses/user/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    // Retrieve the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Retrieve all courses associated with the user's ID
+    const courses = await Course.find({ user: userId });
+
+    res.status(200).json({ courses });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while retrieving the courses." });
+  }
+});
+
+app.get("/courses", async (req, res) => {
+  try {
+    // Retrieve all courses
+    const courses = await Course.find();
+
+    res.status(200).json({ courses });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while retrieving the courses." });
+  }
+});
 
 app.get("/user", (req, res) => {
   res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
@@ -236,7 +276,7 @@ app.get("/", (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: {
-      name: "name of your app",
+      name: "djdcode backend",
       version: "0.1.0",
     },
   });
