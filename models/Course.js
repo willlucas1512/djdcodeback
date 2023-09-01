@@ -14,6 +14,14 @@ const CourseSchema = new mongoose.Schema({
     ref: "User", // This refers to the User model
     required: true,
   },
+  name_first: {
+    type: String,
+    required: true,
+  },
+  name_last: {
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -32,6 +40,10 @@ const CourseSchema = new mongoose.Schema({
   },
   linhas: {
     type: Number,
+    required: true,
+  },
+  thumbnail: {
+    type: String,
     required: true,
   },
 });

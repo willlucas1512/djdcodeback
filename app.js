@@ -212,13 +212,14 @@ app.post("/courses", async (req, res) => {
       introducao: courseData.introducao,
       user: {
         _id: loggedInUserId,
-        name_first: req.body.user.name_first,
-        name_last: req.body.user.name_last,
       },
+      name_first: req.body.user.name_first,
+      name_last: req.body.user.name_last,
       niveis: courseData.niveis,
       qtd_niveis: courseData.qtd_niveis,
       colunas: courseData.colunas,
       linhas: courseData.linhas,
+      thumbnail: req.body.thumbnail,
     });
 
     // Save the new course
