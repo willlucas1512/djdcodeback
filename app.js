@@ -133,7 +133,7 @@ app.post("/recover", (req, res) => {
         text:
           "Olá,  \n" +
           "Acesse o link abaixo para alterar a senha de acesso no DJDcodE: \n" +
-          `http://localhost:3000/reset-pass/${token} \n` +
+          `https://djdcode.vercel.app/reset-pass/${token} \n` +
           "Caso não tenha solicitado a alteração de senha, favor ignorar esta mensagem.",
       };
       transporter.sendMail(mailOptions, async (error, info) => {
@@ -202,7 +202,7 @@ app.post("/courses", async (req, res) => {
     });
     if (existingCourse) {
       return res.status(400).json({
-        message: "Course with the same name already exists for this user.",
+        message: "Já existe um curso com o mesmo nome para este usuário.",
       });
     }
 
@@ -225,12 +225,29 @@ app.post("/courses", async (req, res) => {
     // Save the new course
     await newCourse.save();
 
-    res.status(200).json({ message: "Course saved successfully!" });
+    res.status(200).json({ message: "Curso salvo com sucesso!" });
   } catch (error) {
-    console.error(error);
+    let xErrors = {};
+    Object.values(error.errors).forEach((pValue) => {
+      if (pValue.kind === "required") {
+        xErrors[pValue.path] = `Está faltando preencher ${
+          pValue.path === "nome"
+            ? "o nome do curso"
+            : pValue.path === "introducao"
+            ? "a introdução do curso"
+            : pValue.path === "qtd_niveis"
+            ? "a quantidade de níveis"
+            : pValue.path === "colunas"
+            ? "a quantidade de colunas"
+            : pValue.path === "linhas"
+            ? "a quantidade de linhas"
+            : "a miniatura"
+        }.`;
+      }
+    });
     res
       .status(500)
-      .json({ message: "An error occurred while saving the course." });
+      .json({ message: "Ocorreu um erro ao salvar o curso.", errors: xErrors });
   }
 });
 app.get("/courses/user/:userId", async (req, res) => {
